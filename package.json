@@ -1,0 +1,48 @@
+{
+  "name": "eidolon",
+  "version": "0.1.0",
+  "description": "Plataforma colaborativa de creación audiovisual con IA",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo run clean",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "db:studio": "turbo run db:studio",
+    "type-check": "turbo run type-check"
+  },
+  "devDependencies": {
+    "@turbo/gen": "^1.10.12",
+    "eslint": "^8.48.0",
+    "prettier": "^3.0.3",
+    "turbo": "^1.10.12",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/eidolon.git"
+  },
+  "keywords": [
+    "ai",
+    "audiovisual",
+    "collaboration",
+    "creative",
+    "streaming",
+    "content-creation"
+  ],
+  "author": "EIDOLON Team",
+  "license": "MIT"
+}

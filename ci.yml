@@ -1,0 +1,126 @@
+# 🎯 EIDOLON - Professional CI/CD Pipeline
+# Continuous Integration & Deployment for Next.js + NestJS Monorepo
+
+name: 🚀 EIDOLON CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # === TESTING & QUALITY ASSURANCE ===
+  test:
+    name: 🧪 Tests & Quality
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: 📦 Install Dependencies
+      run: npm ci
+      
+    - name: 🔍 Lint Code
+      run: npm run lint
+      
+    - name: 🎨 Check Code Format
+      run: npm run format:check
+      
+    - name: 🧪 Run Unit Tests
+      run: npm run test -- --coverage
+      
+    - name: 🏗️ Build Frontend
+      run: npm run build:frontend
+      
+    - name: 🏗️ Build Backend
+      run: npm run build:backend
+      
+    - name: 📊 Upload Coverage Reports
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+  # === SECURITY SCAN ===
+  security:
+    name: 🔒 Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🔍 Run Snyk Security Scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+  # === DEPLOYMENT ===
+  deploy:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 🔧 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        
+    - name: 📦 Install Dependencies
+      run: npm ci
+      
+    - name: 🏗️ Build for Production
+      run: npm run build
+      
+    - name: 🚀 Deploy to Vercel
+      uses: amondnet/vercel-action@v25
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        vercel-args: '--prod'
+
+  # === BACKUP AUTOMÁTICO ===
+  backup:
+    name: 💾 Automated Backup
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      
+    - name: 💾 Create Backup Archive
+      run: |
+        tar -czf eidolon-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
+          --exclude=node_modules \
+          --exclude=.git \
+          --exclude=dist \
+          --exclude=.next \
+          .
+        
+    - name: ☁️ Upload to Cloud Storage
+      uses: actions/upload-artifact@v4
+      with:
+        name: eidolon-backup-${{ github.sha }}
+        path: eidolon-backup-*.tar.gz
+        retention-days: 90
